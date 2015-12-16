@@ -1,0 +1,83 @@
+#!/bin/sh
+
+DIR=$(cd $(dirname $0); pwd)
+
+cat <<DATA
+VM_NAME=$1
+VM_DIR="/vagrant/$1"
+PROVISION_DIR=$2
+SCRIPT_DIR="$DIR"
+DATA
+
+cat <<'DATA'
+time_record() {
+  eval $1_RECORD_TIME=`date +%s`
+}
+
+time_diff() {
+  local NOW_TIME=`date +%s`
+  local RECORD_TIME=`eval echo \\$$1_RECORD_TIME`
+  local DIFF_TIME=$(($NOW_TIME - $RECORD_TIME))
+
+  local MINUTES=$(($DIFF_TIME / 60))
+  local SECONDS=`printf '%02d' $(($DIFF_TIME % 60))`
+
+  echo ${MINUTES}m${SECONDS}s
+}
+
+provision_start() {
+  time_record PROVISION
+  echo -e "\e[35mProvisioning started. (`date`)\e[0m"
+  echo "VM_NAME      : $VM_NAME"
+  echo "VM_DIR       : $VM_DIR"
+  echo "PROVISION_DIR: $PROVISION_DIR"
+  echo "SCRIPT_DIR   : $SCRIPT_DIR"
+}
+
+provision_complete() {
+  echo -e "\e[35m\nProvisioning completed. (`time_diff PROVISION`)\e[0m"
+}
+
+provide() {
+  local USER=$1
+  local PROG=$2
+  shift 2
+
+  local TITLE="Provide $PROG ($USER)"
+
+  if [ "$USER" = "" ]; then
+    echo -e "\n$TITLE: User name is missing." >&2
+    exit 1
+  fi
+
+  local TARGET=$(resource $PROG)
+
+  if [ "$TARGET" = "" ]; then
+    echo -e "\n$TITLE: Not found '$PROG'." >&2
+    exit 1
+  fi
+
+  time_record PROVIDE
+
+  echo -e "\e[35m\n$TITLE: execute $TARGET\e[0m"
+
+  cd $(dirname $TARGET)
+  sudo -u $USER -H ./$PROG $@
+
+  echo -e "\e[35m$TITLE: finished (`time_diff PROVIDE`)\e[0m"
+}
+
+resource() {
+  if [ -f $VM_DIR/$1 ]; then
+    echo $VM_DIR/$1
+  fi
+
+  if [ -f $PROVISION_DIR/$1 ]; then
+    echo $PROVISION_DIR/$1
+  fi
+
+  if [ -f $SCRIPT_DIR/provisions/$1 ]; then
+    echo $SCRIPT_DIR/provisions/$1
+  fi
+}
+DATA
