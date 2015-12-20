@@ -51,6 +51,10 @@ unless defined? SETUP then
   SETUP = ""
 end
 
+def BOOTSTRAP(vmname="")
+  "eval \"$(/home/vagrant/provisioner/bootstrap #{vmname})\""
+end
+
 class VagrantDev
   attr_accessor :config
 
@@ -58,23 +62,17 @@ class VagrantDev
     @config = config
   end
 
-  def self.configure(config, &block)
-    config.vm.provision "fix-no-tty", type: "shell" do |s|
-      s.privileged = false
-      s.inline = <<-SHELL
-        sudo sed -i '/tty/!s/mesg n/tty -s \\&\\& mesg n/' /root/.profile
-      SHELL
-    end
+  def self.prepare(config)
+    config.vm.provision "shell", privileged: false, inline: <<-SHELL
+      sudo sed -i '/tty/!s/mesg n/tty -s \\&\\& mesg n/' /root/.profile
+    SHELL
 
     provisioner = File.join(File.dirname(__FILE__), 'provisioner')
     config.vm.provision "file", source: provisioner, destination: "./"
-
-    config.vm.provision "prepare provisioner", type: "shell", inline: <<-SHELL
-      chmod +x "$(eval echo ~vagrant)/provisioner/"*
-      ln -snf "$(eval echo ~vagrant)/provisioner/bootstrap" /bootstrap
+    config.vm.provision "shell", inline: <<-SHELL
+      chmod +x "/home/vagrant/provisioner/"*
     SHELL
-
-    self.new(config).instance_eval(&block)
+    VagrantDev.new(config)
   end
 
   def load_vms
@@ -86,29 +84,6 @@ class VagrantDev
         VagrantDev::Envrionment.new(config, vmname).load(path)
       end
     end
-  end
-
-  def create_user(username, password: username, keyfile: keyfile, setup: setup)
-    keydata = File.read(keyfile)
-    setup_script = setup ? SETUP : ""
-    config.vm.provision "create user", type: "shell", inline: <<-SHELL
-      eval "$(/bootstrap)"
-      create-user '#{username}' '#{password}' '#{keydata}' '#{setup_script}'
-    SHELL
-  end
-
-  def create_partition(device)
-    config.vm.provision "create partition", type: "shell", inline: <<-SHELL
-      eval "$(/bootstrap)"
-      create-partition "#{device}"
-    SHELL
-  end
-
-  def mount_partition(name, device, path)
-    config.vm.provision "mount partition", type: "shell", inline: <<-SHELL
-      eval "$(/bootstrap)"
-      mount-partition "#{name}" "#{device}" "#{path}"
-    SHELL
   end
 end
 
