@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -eu
+
+fdisk -l $1 | grep "^/dev"

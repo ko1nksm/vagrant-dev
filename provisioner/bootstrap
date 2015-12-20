@@ -1,0 +1,9 @@
+#!/bin/sh
+
+while [ ${self=$0} ]; do
+  cd "${self%/*}/"
+  self=$(readlink "${self##*/}")
+done
+
+echo export VM_NAME=$1
+echo export PATH=$(pwd):$PATH

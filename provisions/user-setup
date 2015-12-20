@@ -1,8 +1,0 @@
-#!/bin/sh
-
-DATA=$1
-
-if [ "$DATA" != "" ]; then
-    echo "$DATA" | base64 -d > ~/user-setup
-    chmod +x ~/user-setup
-fi

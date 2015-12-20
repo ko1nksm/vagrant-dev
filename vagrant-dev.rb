@@ -1,5 +1,3 @@
-require 'base64'
-
 def err(*messages)
   print "\e[31m" + messages.join("\n") + "\n\e[0m"
 end
@@ -23,7 +21,7 @@ unless defined? USERNAME then
   end
 end
 
-unless defined? DOT_SSH_DIR then
+unless defined? KEY_FILE then
   paths = []
 
   if ENV.has_key?('HOME') then
@@ -39,53 +37,84 @@ unless defined? DOT_SSH_DIR then
   end
 
   paths.map! do |path|
-    File.expand_path(File.join(path, '.ssh'))
+    File.expand_path(File.join path, '.ssh', 'id_rsa.pub')
   end
 
-  DOT_SSH_DIR = paths.find { |path| File.exists? path }
+  KEY_FILE = paths.find { |path| File.exists? path }
 
-  if DOT_SSH_DIR.nil? then
-    warn '.ssh directory not found.', paths.map { |path| "  " + path }
+  if KEY_FILE.nil? then
+    warn 'id_rsa.pub not found.'
   end
 end
 
-unless defined? TIMEZONE then
-  TIMEZONE = ''
-end
-
-unless defined? USERSETUP then
-  USERSETUP = ''
+unless defined? SETUP then
+  SETUP = ""
 end
 
 class VagrantDev
-  def self.setup(options)
-    self::Envrionment.setup(options)
+  attr_accessor :config
+
+  def initialize(config)
+    @config = config
   end
 
-  def self.vm_define(config, &block)
-    Dir.glob('*/vmdefine.rb') do |path|
-      vmname = File.dirname(path)
+  def self.configure(config, &block)
+    config.vm.provision "fix-no-tty", type: "shell" do |s|
+      s.privileged = false
+      s.inline = <<-SHELL
+        sudo sed -i '/tty/!s/mesg n/tty -s \\&\\& mesg n/' /root/.profile
+      SHELL
+    end
+
+    provisioner = File.join(File.dirname(__FILE__), 'provisioner')
+    config.vm.provision "file", source: provisioner, destination: "./"
+
+    config.vm.provision "prepare provisioner", type: "shell", inline: <<-SHELL
+      chmod +x "$(eval echo ~vagrant)/provisioner/"*
+      ln -snf "$(eval echo ~vagrant)/provisioner/bootstrap" /bootstrap
+    SHELL
+
+    self.new(config).instance_eval(&block)
+  end
+
+  def load_vms
+    vagrantfile_dir = File.dirname(caller_locations(1,1)[0].absolute_path)
+    Dir.glob(File.join(vagrantfile_dir, '*', 'vmdefine.rb')) do |path|
+      vmname = File.basename(File.dirname(path))
       config.vm.define vmname, autostart: false do |config|
-        config.vm.provider :virtualbox do |vb|
-          vb.shared_folder DOT_SSH_DIR
-        end
-        block.call(config, vmname)
-        self::Envrionment.new(config, vmname).load(path)
+        yield vmname
+        VagrantDev::Envrionment.new(config, vmname).load(path)
       end
     end
+  end
+
+  def create_user(username, password: username, keyfile: keyfile, setup: setup)
+    keydata = File.read(keyfile)
+    setup_script = setup ? SETUP : ""
+    config.vm.provision "create user", type: "shell", inline: <<-SHELL
+      eval "$(/bootstrap)"
+      create-user '#{username}' '#{password}' '#{keydata}' '#{setup_script}'
+    SHELL
+  end
+
+  def create_partition(device)
+    config.vm.provision "create partition", type: "shell", inline: <<-SHELL
+      eval "$(/bootstrap)"
+      create-partition "#{device}"
+    SHELL
+  end
+
+  def mount_partition(name, device, path)
+    config.vm.provision "mount partition", type: "shell", inline: <<-SHELL
+      eval "$(/bootstrap)"
+      mount-partition "#{name}" "#{device}" "#{path}"
+    SHELL
   end
 end
 
 class VagrantDev::Envrionment
-  @@vagrantfile_path = Dir.pwd
-  @@provisions_path = '.provisions'
-
   attr_accessor :config
   attr_accessor :vmname
-
-  def self.setup(options)
-    @@provisions_path ||= options[:provisions]
-  end
 
   def initialize(config, vmname)
     @config = config
@@ -94,39 +123,6 @@ class VagrantDev::Envrionment
 
   def load(vmdefine_path)
     instance_eval File.read(vmdefine_path)
-  end
-
-  def provision(code)
-    initialize_path = File.join(File.dirname(__FILE__), 'initialize')
-    provisions_path = File.join(@@vagrantfile_path, @@provisions_path)
-
-    vm_initialize_path = vm_internal_path(initialize_path)
-    vm_provisions_path = vm_internal_path(provisions_path)
-
-    <<-CODE
-      set -e
-      eval "$(#{vm_initialize_path} #{vmname} #{vm_provisions_path})"
-      provision_start
-      provide root locale $(resource locale.gen)
-      provide root timezone #{TIMEZONE}
-      provide root shared-folder install
-      provide root create-user #{USERNAME}
-      provide root mountsf .ssh /home/#{USERNAME}/.ssh --user-only #{USERNAME}
-      #{code}
-      provide #{USERNAME} user-setup #{encode(USERSETUP)}
-      provide root shared-folder start
-      provision_complete
-    CODE
-  end
-
-  def encode(data)
-    Base64.strict_encode64(data)
-  end
-
-  def vm_internal_path(path)
-    base = @@vagrantfile_path
-    rel = Pathname(path).relative_path_from(Pathname(base))
-    '/vagrant/' + rel.to_s
   end
 end
 

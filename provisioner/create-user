@@ -1,0 +1,29 @@
+#!/bin/sh
+
+username=$1
+password=$2
+keydata=$3
+setup=$4
+
+password=$(echo $password | openssl passwd -1 -stdin)
+
+echo "Create login user '$username'"
+if id $username > /dev/null 2>&1; then
+  echo "user '$username' already exists, skipping."
+else
+  useradd -m -G adm,staff,vagrant -s /bin/bash -p $password $username
+  echo "$username ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$username
+fi
+usermod -p $password $username
+
+echo "Insert authorized_keys"
+echo "$keydata" > /tmp/authorized_keys
+install -o $username -g $username -m 700 -d /home/$username/.ssh
+install -o $username -g $username -m 600 /tmp/authorized_keys /home/$username/.ssh/authorized_keys
+rm "/tmp/authorized_keys"
+
+if [ "$setup" != "" ]; then
+  echo "$setup" > /home/$username/setup.sh
+  chown $username:$username /home/$username/setup.sh
+  chmod +x /home/$username/setup.sh
+fi

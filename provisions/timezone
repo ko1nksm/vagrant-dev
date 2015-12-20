@@ -1,6 +1,0 @@
-#!/bin/sh
-
-if [ "$1" != "" ]; then
-    echo "Change timezone to $1"
-    cp /usr/share/zoneinfo/$1 /etc/localtime
-fi

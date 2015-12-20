@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -eu
+
+device=$1
+
+if [ ! -e "$device" ]; then
+  echo "Device not found. ($device)" >&2
+  exit 1
+fi
+
+showfs() {
+  local param
+  for param in "$@"; do
+    case $param in
+      TYPE*) echo $param | cut -c 7-$((${#param}-1))
+    esac
+  done
+}
+
+showfs $(blkid $device)
