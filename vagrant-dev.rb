@@ -52,7 +52,11 @@ unless defined? SETUP then
 end
 
 def BOOTSTRAP(vmname="")
-  "eval \"$(/home/vagrant/provisioner/bootstrap #{vmname})\""
+  "eval \"$(~vagrant/provisioner/bootstrap #{vmname})\""
+end
+
+def READ(file)
+  File.read(file)
 end
 
 class VagrantDev
@@ -62,26 +66,20 @@ class VagrantDev
     @config = config
   end
 
-  def self.prepare(config)
-    config.vm.provision "shell", privileged: false, inline: <<-SHELL
-      sudo sed -i '/tty/!s/mesg n/tty -s \\&\\& mesg n/' /root/.profile
-    SHELL
-
+  def self.install(config)
     provisioner = File.join(File.dirname(__FILE__), 'provisioner')
     config.vm.provision "file", source: provisioner, destination: "./"
-    config.vm.provision "shell", inline: <<-SHELL
-      chmod +x "/home/vagrant/provisioner/"*
-    SHELL
-    VagrantDev.new(config)
+    config.vm.provision "shell", inline: "chmod +x ~vagrant/provisioner/*"
+    yield VagrantDev.new(config)
   end
 
-  def load_vms
-    vagrantfile_dir = File.dirname(caller_locations(1,1)[0].absolute_path)
-    Dir.glob(File.join(vagrantfile_dir, '*', 'vmdefine.rb')) do |path|
+  def enumerate_vms(vagrantfile_dir)
+    Dir.glob(File.join(vagrantfile_dir, '*', 'vm.rb')) do |path|
       vmname = File.basename(File.dirname(path))
       config.vm.define vmname, autostart: false do |config|
-        yield vmname
-        VagrantDev::Envrionment.new(config, vmname).load(path)
+        yield vmname, Proc.new {
+          VagrantDev::Envrionment.new(config, vmname).load(path)
+        }
       end
     end
   end
