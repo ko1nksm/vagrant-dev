@@ -55,6 +55,8 @@ def BOOTSTRAP(vmname="")
   "eval \"$(~vagrant/provisioner/bootstrap #{vmname})\""
 end
 
+COMPLETE = "echo \"Provision complete\""
+
 def READ(file)
   File.read(file)
 end
