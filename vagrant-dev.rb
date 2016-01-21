@@ -79,7 +79,7 @@ class VagrantDev
     Dir.glob(File.join(vagrantfile_dir, '*', 'vm.rb')) do |path|
       vmname = File.basename(File.dirname(path))
       config.vm.define vmname, autostart: false do |config|
-        yield vmname, Proc.new {
+        yield vmname, config, Proc.new {
           VagrantDev::Envrionment.new(config, vmname).load(path)
         }
       end
