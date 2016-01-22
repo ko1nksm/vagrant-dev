@@ -127,5 +127,9 @@ module VagrantPlugins::ProviderVirtualBox
         '--hostpath', hostpath
       ]
     end
+
+    def description(text)
+      self.customize ['modifyvm', :id, '--description', text]
+    end
   end
 end
