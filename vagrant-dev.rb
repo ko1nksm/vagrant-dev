@@ -117,6 +117,10 @@ module VagrantPlugins::ProviderVirtualBox
       keys = params.keys.map { |key| '--' + key.to_s }
       options = keys.zip(params.values).flatten
       self.customize ['storageattach', :id, *options]
+
+      name = params.values_at(:storagectl, :port, :device).join('-')
+      key = "vagrant-dev/attach_storage/" + name
+      self.customize ['setextradata', :id, key, '1']
     end
 
     def shared_folder(hostpath, name = File.basename(hostpath))
