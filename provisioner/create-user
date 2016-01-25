@@ -2,8 +2,6 @@
 
 username=$1
 password=$2
-keydata=$3
-setup=$4
 
 password=$(echo $password | openssl passwd -1 -stdin)
 
@@ -15,9 +13,3 @@ else
   echo "$username ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$username
 fi
 usermod -p $password $username
-
-echo "Insert authorized_keys"
-echo "$keydata" > /tmp/authorized_keys
-install -o $username -g $username -m 700 -d /home/$username/.ssh
-install -o $username -g $username -m 600 /tmp/authorized_keys /home/$username/.ssh/authorized_keys
-rm "/tmp/authorized_keys"

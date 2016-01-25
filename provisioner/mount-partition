@@ -5,23 +5,27 @@ set -eu
 name=$1
 device=$2
 dir=$3
+owner=${4:-root}
+group=${5:-$owner}
 
-if [ "$(fstype $device)" ]; then
-  exit 0
-fi
+if [ ! "$(fstype $device)" ]; then
+  echo "Formatting $device"
+  mkfs.ext4 -q $device
 
-echo "Formatting $device"
-mkfs.ext4 -q $device
-
-if [ -d $dir ]; then
-  echo "Copying existing data."
-  mount $device /mnt
-  cp -a $dir/* /mnt/
-  umount /mnt
-else
-  mkdir -p $dir
+  if [ -d $dir ]; then
+    echo "Copying existing data."
+    mount $device /mnt
+    cp -a $dir/* /mnt/
+    umount /mnt
+  else
+    mkdir -p $dir
+  fi
 fi
 
 e2label $device $name
-echo "LABEL=$name $dir ext4 defaults 0 0" >> /etc/fstab
+if ! grep "^LABEL=$name " >/dev/null; then
+  echo "LABEL=$name $dir ext4 defaults 0 0" >> /etc/fstab
+fi
 mount -a
+
+chown $owner:$group $dir
