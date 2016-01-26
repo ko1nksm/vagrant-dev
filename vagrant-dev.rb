@@ -53,16 +53,14 @@ end
 
 def BOOTSTRAP(vmname="")
   [
-    'echo "========================================"',
-    'echo "Provision start"',
+    'echo "Provision start =================================="',
     "eval \"$(~vagrant/provisioner/bootstrap #{vmname})\"",
   ].join("\n")
 end
 
 def COMPLETE()
   [
-    'echo "Provision complete"',
-    'echo "========================================"',
+    'echo "Provision complete ==============================="',
   ].join("\n")
 end
 

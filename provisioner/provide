@@ -6,7 +6,7 @@ shift
 target=$(target-path "$prog")
 
 if [ "$target" != "" ]; then
-  echo "----------------------------------------"
+  echo "--------------------------------------------------"
   echo "Provide $prog: execute $target"
 
   cd "$(dirname $target)"
