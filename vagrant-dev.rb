@@ -75,7 +75,7 @@ class VagrantDev
     @config = config
   end
 
-  def self.install(config)
+  def self.configure(config)
     provisioner = File.join(File.dirname(__FILE__), 'provisioner')
     config.vm.provision "file", source: provisioner, destination: "./"
     config.vm.provision "shell", inline: "chmod +x ~vagrant/provisioner/*"
