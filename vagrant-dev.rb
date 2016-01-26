@@ -52,10 +52,19 @@ unless defined? SETUP then
 end
 
 def BOOTSTRAP(vmname="")
-  "eval \"$(~vagrant/provisioner/bootstrap #{vmname})\""
+  [
+    'echo "========================================"',
+    'echo "Provision start"',
+    "eval \"$(~vagrant/provisioner/bootstrap #{vmname})\"",
+  ].join("\n")
 end
 
-COMPLETE = "echo \"Provision complete\""
+def COMPLETE()
+  [
+    'echo "Provision complete"',
+    'echo "========================================"',
+  ].join("\n")
+end
 
 def READ(file)
   File.read(file)
