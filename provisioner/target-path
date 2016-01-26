@@ -1,0 +1,9 @@
+#!/bin/sh
+
+prog=$1
+
+if [ "$VM_NAME" != "" -a -e "/vagrant/$VM_NAME/$prog" ]; then
+  echo "/vagrant/$VM_NAME/$prog"
+elif [ -e "/vagrant/.provisions/$prog" ]; then
+  echo "/vagrant/.provisions/$prog"
+fi

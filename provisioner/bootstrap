@@ -7,3 +7,20 @@ done
 
 echo export VM_NAME=$1
 echo export PATH=$(pwd):$PATH
+
+cat <<'DATA'
+load() {
+  prog=$1
+  target=$(target-path $prog)
+
+  if [ "$target" ]; then
+    echo "Load $prog: $target"
+
+    cd "$(dirname $target)"
+    . "$target"
+  else
+    echo "Load $prog: Not found" >&2
+    exit 1
+  fi
+}
+DATA

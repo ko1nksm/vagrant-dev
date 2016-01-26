@@ -3,12 +3,7 @@
 prog=$1
 shift
 
-target=""
-if [ "$VM_NAME" != "" -a -e "/vagrant/$VM_NAME/$prog" ]; then
-  target="/vagrant/$VM_NAME/$prog"
-elif [ -e "/vagrant/.provisions/$prog" ]; then
-  target="/vagrant/.provisions/$prog"
-fi
+target=$(target-path "$prog")
 
 if [ "$target" != "" ]; then
   echo "Provide $prog: execute $target"
