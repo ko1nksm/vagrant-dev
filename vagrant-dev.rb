@@ -82,29 +82,30 @@ class VagrantDev
     yield VagrantDev.new(config)
   end
 
-  def enumerate_vms(vagrantfile_dir)
-    Dir.glob(File.join(vagrantfile_dir, '*', 'vm.rb')) do |path|
-      vmname = File.basename(File.dirname(path))
+  def vms(vagrantfile_dir)
+    Dir.glob(File.join(vagrantfile_dir, '*', 'vm.rb')) do |vmpath|
+      vmname = File.basename(File.dirname(vmpath))
       config.vm.define vmname, autostart: false do |config|
-        yield vmname, config, Proc.new {
-          VagrantDev::Envrionment.new(config, vmname).load(path)
-        }
+        vm = VagrantDev::VMDefine.new(config, vmname, vmpath)
+        yield vm, config
       end
     end
   end
 end
 
-class VagrantDev::Envrionment
+class VagrantDev::VMDefine
   attr_accessor :config
-  attr_accessor :vmname
+  attr_accessor :name
+  attr_accessor :path
 
-  def initialize(config, vmname)
+  def initialize(config, name, path)
     @config = config
-    @vmname = vmname
+    @name = name
+    @path = path
   end
 
-  def load(vmdefine_path)
-    instance_eval File.read(vmdefine_path)
+  def load
+    instance_eval File.read(@path)
   end
 end
 
