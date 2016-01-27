@@ -129,18 +129,5 @@ module VagrantPlugins::ProviderVirtualBox
       key = "vagrant-dev/attach_storage/" + name
       self.customize ['setextradata', :id, key, '1']
     end
-
-    def shared_folder(hostpath, name = File.basename(hostpath))
-      return unless hostpath
-
-      self.customize ['sharedfolder', 'add', :id,
-        '--name', name,
-        '--hostpath', hostpath
-      ]
-    end
-
-    def description(text)
-      self.customize ['modifyvm', :id, '--description', text]
-    end
   end
 end
