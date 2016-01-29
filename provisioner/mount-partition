@@ -15,7 +15,7 @@ if [ ! "$(fstype $device)" ]; then
   if [ -d $dir ]; then
     echo "Copying existing data."
     mount $device /mnt
-    cp -a $dir/* /mnt/
+    cp -a $dir/. /mnt/
     umount /mnt
   else
     mkdir -p $dir
@@ -23,7 +23,7 @@ if [ ! "$(fstype $device)" ]; then
 fi
 
 e2label $device $name
-if ! grep "^LABEL=$name " >/dev/null; then
+if ! grep "^LABEL=$name " /etc/fstab >/dev/null; then
   echo "LABEL=$name $dir ext4 defaults 0 0" >> /etc/fstab
 fi
 mount -a
