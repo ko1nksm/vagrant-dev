@@ -2,7 +2,8 @@
 
 username=$1
 password=$2
-shell=${3:-/bin/bash}
+group=$3
+shell=${4:-/bin/bash}
 
 password=$(echo $password | openssl passwd -1 -stdin)
 
@@ -10,7 +11,11 @@ echo "Create login user '$username'"
 if id $username > /dev/null 2>&1; then
   echo "user '$username' already exists, skipping."
 else
-  useradd -m -G adm,staff,vagrant -s $shell -p $password $username
+  useradd -m -G vagrant -s $shell -p $password $username
   echo "$username ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$username
 fi
 usermod -p $password $username
+
+if [ "$group" ]; then
+  usermod -aG $group $username
+fi
