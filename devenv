@@ -12,10 +12,10 @@ TAB=$(printf "\t")
 
 usage() {
 cat <<TEXT
-Usage: manage.sh [ -h | --help ]
+Usage: devenv [ -h | --help ]
   Display help
 
-Usage: manage.sh build [OPTION]... [BOX]...
+Usage: devenv build [OPTION]... [BOX]...
   Build box(es)
 
   OPTION:
@@ -24,21 +24,21 @@ Usage: manage.sh build [OPTION]... [BOX]...
     -k, --keep      do not delete package.box after installed
     -n, --no-cache  do not use cache
 
-Usage: manage.sh ssh [OPTION]... [BOX]...
+Usage: devenv ssh [OPTION]... [BOX]...
   Login to box(es) for testing
 
   OPTION:
     -a, --all       ssh to all boxes
     -n, --no-cache  do not use cache
 
-Usage: manage.sh create [OPTION]... [VM]...
+Usage: devenv create [OPTION]... [VM]...
   Create VM(s)
 
   OPTION:
     -a, --all       create all VMs
     -k, --keep      keep the running state
 
-Usage: manage.sh upgrade [OPTION]... [VM]...
+Usage: devenv upgrade [OPTION]... [VM]...
   Upgrade VM(s)
 
   OPTION:
@@ -46,7 +46,7 @@ Usage: manage.sh upgrade [OPTION]... [VM]...
     -r, --recreate  destroy VM and recreate
     -f, --force     force recreate VM
 
-Usage: manage.sh remove [OPTION]... [VM]...
+Usage: devenv remove [OPTION]... [VM]...
   Remove VM(s)
 
   OPTION:
