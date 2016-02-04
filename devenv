@@ -345,7 +345,7 @@ do_ssh() {
 
     vagrant halt
     vagrant up --no-provision
-    vagrant ssh
+    vagrant ssh ||:
     vagrant destroy --force
   done
 }
