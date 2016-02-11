@@ -280,13 +280,13 @@ do_build() {
     [ -d "$BOXESDIR/$box" ] || abort "Not found box directory"
     cd "$BOXESDIR/$box"
 
-    unset LATEST_BOX_SUFFIX
+    unset LATEST_BOX
     if [ ! "$nocache" ]; then
       if vagrant box list | grep "$box@latest " >/dev/null; then
         info "Build from latest box using as cache"
         info "To remove latest box, run below"
         info "vagrant box remove \"$box@latest\" --provider virtualbox"
-        export LATEST_BOX_SUFFIX="@latest"
+        export LATEST_BOX="$box@latest"
       fi
     fi
 
@@ -333,10 +333,10 @@ do_ssh() {
     [ -d "$BOXESDIR/$box" ] || abort "Not found box directory"
     cd "$BOXESDIR/$box"
 
-    unset LATEST_BOX_SUFFIX
+    unset LATEST_BOX
     if [ ! "$nocache" ]; then
       if vagrant box list | grep "$box@latest " >/dev/null; then
-        export LATEST_BOX_SUFFIX="@latest"
+        export LATEST_BOX="$box@latest"
       else
         error "Not found latest box '$box'"
         continue
