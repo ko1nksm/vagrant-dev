@@ -282,11 +282,11 @@ do_build() {
 
     unset LATEST_BOX
     if [ ! "$nocache" ]; then
-      if vagrant box list | grep "$box@latest " >/dev/null; then
+      if vagrant box list | grep "$box " >/dev/null; then
         info "Build from latest box using as cache"
         info "To remove latest box, run below"
-        info "vagrant box remove \"$box@latest\" --provider virtualbox"
-        export LATEST_BOX="$box@latest"
+        info "vagrant box remove \"$box\" --provider virtualbox"
+        export LATEST_BOX="$box"
       fi
     fi
 
@@ -307,11 +307,11 @@ do_build() {
     cd "$BASEDIR"
     mv "$BOXESDIR/$box/$package" "$BASEDIR/"
     if [ "$install" ]; then
-      vagrant box add "$package" --name "$box@latest" --force
+      vagrant box add "$package" --name "$box" --force
       [ "$keep" ] || rm "$package"
     else
       info "To install box, run below"
-      info "vagrant box add \"$package\" --name \"$box@latest\" --force"
+      info "vagrant box add \"$package\" --name \"$box\" --force"
     fi
   done
 }
@@ -335,8 +335,8 @@ do_ssh() {
 
     unset LATEST_BOX
     if [ ! "$nocache" ]; then
-      if vagrant box list | grep "$box@latest " >/dev/null; then
-        export LATEST_BOX="$box@latest"
+      if vagrant box list | grep "$box " >/dev/null; then
+        export LATEST_BOX="$box"
       else
         error "Not found latest box '$box'"
         continue
