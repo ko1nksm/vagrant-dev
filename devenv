@@ -109,6 +109,14 @@ vagrant_vmid() {
   fi
 }
 
+vagrant_box_exists() {
+  local box=$1
+  local provider=${2:-virtualbox}
+  local version=${3:-0}
+
+  vagrant box list --no-color | grep "^$box\s\+($provider, $version)" >/dev/null
+}
+
 vbox_liststorage() {
   local vm="$1" vmid name line item
   vmid=$(vagrant_vmid "$vm")
@@ -282,10 +290,8 @@ do_build() {
 
     unset LATEST_BOX
     if [ ! "$nocache" ]; then
-      if vagrant box list | grep "$box " >/dev/null; then
-        info "Build from latest box using as cache"
-        info "To remove latest box, run below"
-        info "vagrant box remove \"$box\" --provider virtualbox"
+      if vagrant_box_exists "$box"; then
+        info "Build from box '$box' using as a cache"
         export LATEST_BOX="$box"
       fi
     fi
@@ -335,7 +341,7 @@ do_ssh() {
 
     unset LATEST_BOX
     if [ ! "$nocache" ]; then
-      if vagrant box list | grep "$box " >/dev/null; then
+      if vagrant_box_exists "$box"; then
         export LATEST_BOX="$box"
       else
         error "Not found latest box '$box'"
