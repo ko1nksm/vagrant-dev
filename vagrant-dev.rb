@@ -50,11 +50,11 @@ unless defined? KEY_FILE then
 end
 
 def BOOTSTRAP(vmname="")
-  "eval \"$(~vagrant/provisioner/BOOTSTRAP #{vmname})\""
+  "eval \"$(~vagrant/helpers/BOOTSTRAP #{vmname})\""
 end
 
 def COMPLETE()
-  "~vagrant/provisioner/COMPLETE"
+  "~vagrant/helpers/COMPLETE"
 end
 
 def READ(file)
@@ -73,9 +73,9 @@ class VagrantDev
   end
 
   def self.configure(config)
-    provisioner = File.join(File.dirname(__FILE__), 'provisioner')
-    config.vm.provision "file", source: provisioner, destination: "./"
-    config.vm.provision "shell", inline: "chmod +x ~vagrant/provisioner/*"
+    helpers = File.join(File.dirname(__FILE__), 'helpers')
+    config.vm.provision "file", source: helpers, destination: "./"
+    config.vm.provision "shell", inline: "chmod +x ~vagrant/helpers/*"
     yield VagrantDev.new(config)
   end
 
