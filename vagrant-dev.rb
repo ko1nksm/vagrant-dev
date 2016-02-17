@@ -108,27 +108,25 @@ end
 
 module VagrantPlugins::ProviderVirtualBox
   class Config < Vagrant.plugin("2", :config)
-    def attach_storage(filename, pos, size, params)
-      pos = pos.split('-')
-      basedir = params.delete(:basedir)
+    def attach_storage(filename, position, size, options)
+      pos = position.split('-')
+      basedir = options.delete(:basedir)
       filename = File.join(basedir, filename)
 
       unless File.exist? filename
-        options = ['--filename', filename, '--size', size]
-        self.customize ['createhd', *options]
+        self.customize ['createhd', '--filename', filename, '--size', size]
       end
 
-      params[:storagectl] = pos[0]
-      params[:port] = pos[1]
-      params[:device] = pos[2]
-      params[:medium] = filename
-      params[:type] ||= "hdd"
-      keys = params.keys.map { |key| '--' + key.to_s }
-      options = keys.zip(params.values).flatten
-      self.customize ['storageattach', :id, *options]
+      options[:storagectl] = pos[0]
+      options[:port] = pos[1]
+      options[:device] = pos[2]
+      options[:medium] = filename
+      options[:type] ||= "hdd"
+      keys = options.keys.map { |key| '--' + key.to_s }
+      params = keys.zip(options.values).flatten
+      self.customize ['storageattach', :id, *params]
 
-      name = params.values_at(:storagectl, :port, :device).join('-')
-      key = "vagrant-dev/attach_storage/" + name
+      key = "vagrant-dev/attach_storage/" + position
       self.customize ['setextradata', :id, key, '1']
     end
   end
