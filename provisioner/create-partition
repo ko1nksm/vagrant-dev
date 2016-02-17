@@ -4,7 +4,7 @@ set -eu
 
 device=$1
 
-CR="
+NL="
 "
 
 if [ ! -e "$device" ]; then
@@ -17,4 +17,4 @@ if fdisk -l $1 | grep "^/dev" > /dev/null; then
 fi
 
 echo "Create partition. ($device)"
-echo "n${CR}p${CR}1${CR}${CR}${CR}w" | fdisk $device > /dev/null
+echo "n${NL}p${NL}1${NL}${NL}${NL}w" | fdisk $device > /dev/null
