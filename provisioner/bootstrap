@@ -9,17 +9,41 @@ echo export VM_NAME=$1
 echo export PATH=$(pwd):$PATH
 
 cat <<'DATA'
+target_path() {
+  if [ "$VM_NAME" != "" -a -e "/vagrant/$VM_NAME/$1" ]; then
+    echo "/vagrant/$VM_NAME/$1"
+  elif [ -e "/vagrant/.provisions/$1" ]; then
+    echo "/vagrant/.provisions/$1"
+  fi
+}
+
 load() {
-  prog=$1
-  target=$(target-path $prog)
+  local target=$(target_path "$1")
 
   if [ "$target" ]; then
-    echo "Load $prog: $target"
+    echo "--------------------------------------------------"
+    echo "Load $1: $target"
 
     cd "$(dirname $target)"
     . "$target"
   else
-    echo "Load $prog: Not found" >&2
+    echo "Load $1: Not found" >&2
+    exit 1
+  fi
+}
+
+provide() {
+  local target=$(target_path "$1")
+
+  if [ "$target" ]; then
+    echo "--------------------------------------------------"
+    echo "Provide $1: execute $target"
+
+    shift
+    cd "$(dirname $target)"
+    "$target" "$@"
+  else
+    echo "Provide $1: Provider not found" >&2
     exit 1
   fi
 }
