@@ -1,9 +1,11 @@
 #!/bin/sh
 
+set -eu
+
 username=$1
 keydata=$2
 
-echo "Insert authorized_keys"
+echo "Insert authorized_keys ($username)"
 echo "$keydata" > /tmp/authorized_keys
 install -o $username -g $username -m 700 -d /home/$username/.ssh
 install -o $username -g $username -m 600 /tmp/authorized_keys /home/$username/.ssh/authorized_keys

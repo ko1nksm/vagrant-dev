@@ -7,6 +7,7 @@ owner=$2
 perm=$3
 data=${4:-}
 
+echo "Create file '$file'"
 printf "%s" "$data" > "$file"
 chown "$owner" "$file"
 chmod "$perm" "$file"

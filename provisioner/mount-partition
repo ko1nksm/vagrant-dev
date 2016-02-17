@@ -42,6 +42,7 @@ e2label "$device" "$name"
 if ! grep "^LABEL=$name " /etc/fstab >/dev/null; then
   echo "LABEL=$name $dir ext4 defaults 0 0" >> /etc/fstab
 fi
+echo "Mount $name [$device => $dir]"
 mount -a
 
 chown "$owner:$group" "$dir"
