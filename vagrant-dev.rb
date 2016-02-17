@@ -108,17 +108,21 @@ end
 
 module VagrantPlugins::ProviderVirtualBox
   class Config < Vagrant.plugin("2", :config)
-    def attach_storage(filename, params)
+    def attach_storage(filename, pos, size, params)
+      pos = pos.split('-')
       basedir = params.delete(:basedir)
       filename = File.join(basedir, filename)
-      size = params.delete(:size)
 
       unless File.exist? filename
         options = ['--filename', filename, '--size', size]
         self.customize ['createhd', *options]
       end
 
+      params[:storagectl] = pos[0]
+      params[:port] = pos[1]
+      params[:device] = pos[2]
       params[:medium] = filename
+      params[:type] ||= "hdd"
       keys = params.keys.map { |key| '--' + key.to_s }
       options = keys.zip(params.values).flatten
       self.customize ['storageattach', :id, *options]
