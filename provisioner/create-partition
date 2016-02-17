@@ -12,7 +12,7 @@ if [ ! -e "$device" ]; then
   exit 1
 fi
 
-if list-partitions "$1" > /dev/null; then
+if fdisk -l $1 | grep "^/dev" > /dev/null; then
   exit 0
 fi
 
