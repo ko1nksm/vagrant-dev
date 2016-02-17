@@ -58,7 +58,7 @@ def COMPLETE()
 end
 
 def READ(file)
-  File.read(file)
+  Shellwords.escape File.read(file)
 end
 
 def DATA(data)
