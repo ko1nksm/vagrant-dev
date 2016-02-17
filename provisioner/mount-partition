@@ -8,24 +8,40 @@ dir=$3
 owner=${4:-root}
 group=${5:-$owner}
 
-if [ ! "$(fstype $device)" ]; then
-  echo "Formatting $device"
-  mkfs.ext4 -q $device
+if [ ! -e "$device" ]; then
+  echo "Device not found. ($device)" >&2
+  exit 1
+fi
 
-  if [ -d $dir ]; then
+fstype=""
+for param in $(blkid "$device"); do
+  case $param in
+    TYPE*)
+      fstype=${param#*=}
+      fstype=${fstype#\"}
+      fstype=${fstype%\"}
+      break
+  esac
+done
+
+if [ ! "$fstype" ]; then
+  echo "Formatting $device"
+  mkfs.ext4 -q "$device"
+
+  if [ -d "$dir" ]; then
     echo "Copying existing data."
-    mount $device /mnt
-    cp -a $dir/. /mnt/
+    mount "$device" /mnt
+    cp -a "$dir/". /mnt/
     umount /mnt
   else
-    mkdir -p $dir
+    mkdir -p "$dir"
   fi
 fi
 
-e2label $device $name
+e2label "$device" "$name"
 if ! grep "^LABEL=$name " /etc/fstab >/dev/null; then
   echo "LABEL=$name $dir ext4 defaults 0 0" >> /etc/fstab
 fi
 mount -a
 
-chown $owner:$group $dir
+chown "$owner:$group" "$dir"
