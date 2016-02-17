@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -eu
+
+file=$1
+owner=$2
+perm=$3
+data=${4:-}
+
+printf "%s" "$data" > "$file"
+chown "$owner" "$file"
+chmod "$perm" "$file"

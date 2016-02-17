@@ -1,3 +1,5 @@
+require 'shellwords'
+
 def err(*messages)
   print "\e[31m" + messages.join("\n") + "\n\e[0m"
 end
@@ -47,10 +49,6 @@ unless defined? KEY_FILE then
   end
 end
 
-unless defined? SETUP then
-  SETUP = ""
-end
-
 def BOOTSTRAP(vmname="")
   "eval \"$(~vagrant/provisioner/BOOTSTRAP #{vmname})\""
 end
@@ -61,6 +59,10 @@ end
 
 def READ(file)
   File.read(file)
+end
+
+def DATA(data)
+  Shellwords.escape data
 end
 
 class VagrantDev
