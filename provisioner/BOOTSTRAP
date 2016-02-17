@@ -19,17 +19,17 @@ target_path() {
   fi
 }
 
-load() {
+include() {
   local target=$(target_path "$1")
 
   if [ "$target" ]; then
     echo "--------------------------------------------------"
-    echo "Load $1: $target"
+    echo "Include $1: $target"
 
     cd "$(dirname $target)"
     . "$target"
   else
-    echo "Load $1: Not found" >&2
+    echo "Include $1: Not found" >&2
     exit 1
   fi
 }
