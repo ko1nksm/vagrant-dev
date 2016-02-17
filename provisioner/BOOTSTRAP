@@ -9,6 +9,8 @@ echo export VM_NAME=$1
 echo export PATH=$(pwd):$PATH
 
 cat <<'DATA'
+echo "BOOTSTRAP ========================================"
+
 target_path() {
   if [ "$VM_NAME" != "" -a -e "/vagrant/$VM_NAME/$1" ]; then
     echo "/vagrant/$VM_NAME/$1"
